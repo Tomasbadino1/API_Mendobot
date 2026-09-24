@@ -22,6 +22,11 @@ Esto es lo que hay que entregar. Lo que no está acá, no se pide.
 - Repositorio en GitHub con commits de **todos** los integrantes.
 - API desplegada **en producción con Gunicorn** en Render, con URL pública y `/docs` funcionando (ver abajo).
 
+### Nombres en el código (criterio acordado con la cátedra de Inglés)
+- **Variables, funciones y clases en inglés**: `list_students`, `get_session`, `class Student(Base)`.
+- **Tablas, columnas, rutas y query params** quedan **como figuran en el alcance** (en español): son el contrato de la API. Ejemplo: `class Student(Base)` con `__tablename__ = "estudiantes"` y columna `anio_cursada`.
+- **Comentarios**: pueden estar en español mientras desarrollan, pero para la **entrega final** tienen que estar en inglés.
+
 ### Despliegue a producción (Render + Gunicorn)
 
 En tu compu desarrollás con `uvicorn main:app --reload`. En producción corre **Gunicorn** como administrador de procesos, con workers de Uvicorn adentro.
@@ -176,6 +181,8 @@ No se pide y **no suma**:
 
 ## 24/09
 
+**📌 Criterio de nombres.** Variables, funciones y clases en **inglés**; tablas, columnas y rutas como en el alcance; comentarios en inglés para la entrega final. Está detallado arriba en *Reglas comunes* y la guía ya lo aplica.
+
 **Lo que hay:** primer avance real. `seed.py` crea `headquarters`, `careers` y `students` con 3 + 3 + 20 registros, y `main.py` tiene la verificación de clave y el comienzo de `GET /estudiantes`. Ya hay commits de los dos. 👍
 
 **⚠️ La API rechaza todo.** En `verify`, la línea `x_api_key != KEY` no hace nada (falta el `if`), así que el `raise HTTPException(401)` se ejecuta **siempre**, incluso con la clave correcta. Tiene que ser:
@@ -196,7 +203,7 @@ def verify(x_api_key: str = Header(None)):
 - Una carrera tiene **una** sede: `"sede_id": "3, 1"` no es válido. Si Ingeniería está en dos sedes, cárguenla dos veces o elijan una.
 - Tipo: en la lista de estudiantes la clave es `carerres_id` pero la columna es `careers_id`.
 - El seed carga los datos cada vez que corre, así que en la segunda corrida duplica todo. Tiene que cargar **solo si la base está vacía** (sección 9 de la guía).
-- Usen los nombres del alcance: `sedes`, `carreras`, `estudiantes` con `legajo`, `anio_cursada`, `carrera_id`. Los endpoints se llaman `GET /estudiantes?anio_cursada=1`, y conviene que las columnas coincidan con los query params.
+- Para **tablas y columnas** usen los nombres del alcance: `sedes`, `carreras`, `estudiantes` con `legajo`, `anio_cursada`, `carrera_id`. Las funciones y variables en inglés (`list_students`, `verify`) están bien: es el criterio del curso. Los endpoints se llaman `GET /estudiantes?anio_cursada=1`, y conviene que las columnas coincidan con los query params.
 
 **A corregir en el repo**
 - `data.db` y `__pycache__/` están subidos. Agréguenlos al `.gitignore` y sáquenlos con `git rm --cached data.db -r __pycache__`.
