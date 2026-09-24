@@ -173,3 +173,36 @@ No se pide y **no suma**:
 3. Repartir los endpoints entre los dos: los commits tienen que mostrar el aporte de cada uno.
 
 **⚠️ Datos ficticios, sin excepción.** Los nombres y legajos de `estudiantes` son inventados. Nunca carguen datos de compañeros reales: el repo es público y la clave está a la vista. Es parte de lo que se evalúa.
+
+## 24/09
+
+**Lo que hay:** primer avance real. `seed.py` crea `headquarters`, `careers` y `students` con 3 + 3 + 20 registros, y `main.py` tiene la verificación de clave y el comienzo de `GET /estudiantes`. Ya hay commits de los dos. 👍
+
+**⚠️ La API rechaza todo.** En `verify`, la línea `x_api_key != KEY` no hace nada (falta el `if`), así que el `raise HTTPException(401)` se ejecuta **siempre**, incluso con la clave correcta. Tiene que ser:
+```python
+def verify(x_api_key: str = Header(None)):
+    if x_api_key != KEY:
+        raise HTTPException(status_code=401, detail="API Key inválida o ausente")
+```
+
+**A corregir en `main.py`**
+- `app = FastAPI()` está definido dos veces. Dejen solo el de `dependencies=[Depends(verify)]`.
+- `cursor.execute()` está vacío: el endpoint rompe apenas se lo llama.
+- **Pasen la base a SQLAlchemy** (ver [guias/sqlalchemy_orm.md](guias/sqlalchemy_orm.md)). El `sqlite3` con cursor y SQL a mano ya no va: tablas como clases, consultas con `select(...).where(...)`.
+
+**A corregir en `seed.py`**
+- Los `id` van como `INTEGER PRIMARY KEY`, no como `TEXT`. Con SQLAlchemy es `mapped_column(primary_key=True)` y no hace falta cargarlos a mano.
+- No hay claves foráneas: `careers.sede_id` y `students.careers_id` tienen que ser `ForeignKey`.
+- Una carrera tiene **una** sede: `"sede_id": "3, 1"` no es válido. Si Ingeniería está en dos sedes, cárguenla dos veces o elijan una.
+- Tipo: en la lista de estudiantes la clave es `carerres_id` pero la columna es `careers_id`.
+- El seed carga los datos cada vez que corre, así que en la segunda corrida duplica todo. Tiene que cargar **solo si la base está vacía** (sección 9 de la guía).
+- Usen los nombres del alcance: `sedes`, `carreras`, `estudiantes` con `legajo`, `anio_cursada`, `carrera_id`. Los endpoints se llaman `GET /estudiantes?anio_cursada=1`, y conviene que las columnas coincidan con los query params.
+
+**A corregir en el repo**
+- `data.db` y `__pycache__/` están subidos. Agréguenlos al `.gitignore` y sáquenlos con `git rm --cached data.db -r __pycache__`.
+- `requirements.txt` tiene versiones fijadas de todo, incluso de `pydantic` y `requests` que no se usan. Dejen solo: `fastapi`, `uvicorn`, `uvicorn-worker`, `gunicorn`, `sqlalchemy`.
+
+**Próximos pasos**
+1. Arreglar `verify` y probar en `/docs` que con la clave responde y sin la clave da 401.
+2. Reescribir `seed.py` con SQLAlchemy: 3 clases, FK, carga solo si está vacía.
+3. Terminar `GET /estudiantes?anio_cursada=` y `GET /estudiantes/{id}` con 404.
