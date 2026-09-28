@@ -1,2 +1,4 @@
+mendo/
 __pycache__/
 data.db
+.env
