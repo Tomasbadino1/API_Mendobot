@@ -1,4 +1,6 @@
 import sqlite3
+
+
 con = sqlite3.connect("data.db")
 cur = con.cursor()
 headquarters = [
@@ -7,17 +9,19 @@ headquarters = [
     {"ids": "3", "name": "San Rafael", "city": "San Rafael", "address": "Bernardo de Irigoyen y España"}
 ]
 cur.execute("CREATE TABLE IF NOT EXISTS headquarters "
-            "(id TEXT, name TEXT, city TEXT, address TEXT)")
+            "(id INTEGER, name TEXT, city TEXT, address TEXT)")
 for s in headquarters:
     cur.execute("INSERT INTO headquarters VALUES (?, ?, ?, ?)", (s["ids"], s["name"], s["city"], s["address"]))
 con.commit()
 careers = [
     {"ids": "1", "code": "CS101", "name": "University Technical in Software Development", "modality": "Presencial", "sede_id": "2"},
     {"ids": "2", "code": "ME101", "name": "Public Auctioneer", "modality": "Presencial", "sede_id": "2"},
-    {"ids": "3", "code": "EE101", "name": "Computer Engineering", "modality": "Mixta", "sede_id": "3, 1"}
+    {"ids": "3", "code": "EE101", "name": "Computer Engineering", "modality": "Mixta", "sede_id": "3"},
+    {"ids": "4", "code": "EE101", "name": "Computer Engineering", "modality": "Mixta", "sede_id": "1"}
 ]
+
 cur.execute("CREATE TABLE IF NOT EXISTS careers"
-            "(id TEXT, code TEXT, name TEXT, modality TEXT, sede_id TEXT)")
+            "(id INTEGER, code TEXT, name TEXT, modality TEXT, sede_id TEXT)")
 for c in careers:
     cur.execute("INSERT INTO careers VALUES (?, ?, ?, ?, ?)", (c["ids"], c["code"], c["name"], c["modality"], c["sede_id"]))
 con.commit()
