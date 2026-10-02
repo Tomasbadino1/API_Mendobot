@@ -12,12 +12,10 @@ app = FastAPI(
     dependencies=[Depends(verify)])
 
 
-
 def obtain_connection():
     con = sqlite3.connect("data.db")
+    con.row_factory = sqlite3.Row
     return con
-
-
 
 
 # ==ENDPOINTS==
@@ -27,7 +25,21 @@ def initiation():
 
 @app.get("/estudiantes")
 def list_students(academic_year: int = None):
-    connection = obtain_connection()
-    cursor = connection.cursor()
+    con = obtain_connection()
+    cur = con.cursor()
     if academic_year is not None:
-        cursor.execute()
+        cur.execute("SELECT * FROM estudiantes WHERE anio_cursada=?", (academic_year,))
+    else:
+        cur.execute("SELECT * FROM estudiantes")
+    rows = cur.fetchall()
+    con.close()
+    resultado = []
+    for row in rows:
+        resultado.append(dict(row))
+    return resultado
+
+@app.get("/estudiantes/{id}")
+def get_student(id: int):
+    con = obtain_connection()
+    cur = con.cursor()
+    
