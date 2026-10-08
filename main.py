@@ -23,14 +23,14 @@ def obtain_connection():
 def initiation():
     return {"message": "Bienvenido a la API de Mendobot. Para obtener información sobre los endpoints disponibles, visita /docs."}
 
-@app.get("/estudiantes")
+@app.get("/students")
 def list_students(academic_year: int = None):
     con = obtain_connection()
     cur = con.cursor()
     if academic_year is not None:
-        cur.execute("SELECT * FROM estudiantes WHERE anio_cursada=?", (academic_year,))
+        cur.execute("SELECT * FROM students WHERE year_study=?", (academic_year,))
     else:
-        cur.execute("SELECT * FROM estudiantes")
+        cur.execute("SELECT * FROM students")
     rows = cur.fetchall()
     con.close()
     resultado = []
@@ -98,8 +98,8 @@ def get_summary():
     locations_summary = []
     for row in rows_location:
         locations_summary.append(dict(row))
-        con.close()
     
+    con.close()
     return {
         "estudiantes_por_carrera": careers_sumary,
         "estudiantes_por_sede": locations_summary
