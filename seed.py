@@ -53,4 +53,8 @@ cur.execute("CREATE TABLE IF NOT EXISTS students"
             "(id INTEGER, file TEXT, name TEXT, year_study INTEGER, careers_id INTEGER)")
 for s in students:
     cur.execute("INSERT INTO students VALUES (?, ?, ?, ?, ?)", (s["id"], s["file"], s["name"], s["year_study"], s["carerres_id"]))
+<<<<<<< HEAD
 con.commit()"""
+=======
+con.commit()"""
+>>>>>>> 20fac2792a9206ee932ac52a0c3905078b0c38d7
