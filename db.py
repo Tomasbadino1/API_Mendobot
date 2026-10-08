@@ -12,13 +12,13 @@ def enable_foreign_keys(con, _):
 class Data(DeclarativeBase):
     pass
 
-class Sede(Data):
-    __tablename__ = "headquarters"
+class locations(Data):
+    __tablename__ = "locations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30))
-    city: Mapped[str] = mapped_column(String(20))
-    address: Mapped[str] = mapped_column(String(100))
+    city: Mapped[str] = mapped_column(String(30))
+    address: Mapped[str] = mapped_column(String(30))
 
     def to_dict(self) -> dict:
         return {
@@ -35,7 +35,7 @@ class careers(Data):
     name: Mapped[str] = mapped_column(String(30))
     code: Mapped[str] = mapped_column(String(6))
     mode: Mapped[str] = mapped_column(String(10))
-    sede_id: Mapped[int] = mapped_column(ForeignKey("headquarters.id"))
+    sede_id: Mapped[int] = mapped_column(ForeignKey("locations.id"))
 
     def to_dict(self) -> dict:
         return {
