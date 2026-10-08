@@ -23,8 +23,13 @@ Esto es lo que hay que entregar. Lo que no está acá, no se pide.
 - API desplegada **en producción con Gunicorn** en Render, con URL pública y `/docs` funcionando (ver abajo).
 
 ### Nombres en el código (criterio acordado con la cátedra de Inglés)
+
+> **Actualizado el 08/10:** ahora va **todo en inglés**, también tablas, columnas y rutas. Reemplaza el criterio del 24/09.
+
 - **Variables, funciones y clases en inglés**: `list_students`, `get_session`, `class Student(Base)`.
-- **Tablas, columnas, rutas y query params** quedan **como figuran en el alcance** (en español): son el contrato de la API. Ejemplo: `class Student(Base)` con `__tablename__ = "estudiantes"` y columna `anio_cursada`.
+- **Tablas, columnas, rutas y query params también en inglés**. Ejemplo: `class Student(Base)` con `__tablename__ = "students"`, columna `career_id` y ruta `GET /students`.
+- El alcance de cada grupo lista las tablas y los endpoints en español **solo como referencia**: tradúzcanlos al inglés y usen **el mismo nombre en todos los archivos** (`db.py`, `seed.py`, `main.py`, `validation.py`).
+- **Documentación en inglés**: `README.md`, docstrings y los mensajes que devuelve la API.
 - **Comentarios**: pueden estar en español mientras desarrollan, pero para la **entrega final** tienen que estar en inglés.
 
 ### Despliegue a producción (Render + Gunicorn)
@@ -226,22 +231,21 @@ El problema es que las piezas todavía no están conectadas entre sí, y hoy la 
 - Como `data.db` ya no se sube (correcto), sin seed no hay tablas y todos los endpoints fallan.
 - Cuando git les marca un conflicto, hay que abrir el archivo, elegir con qué versión se quedan, **borrar las tres marcas** y recién ahí hacer el commit.
 
-**⚠️ 2. Tradujeron de más: rutas, tablas y columnas van en español.**
-El criterio es: **nombres de Python en inglés** (variables, funciones, clases), pero **tablas, columnas, rutas y query params como figuran en el alcance**. Es el contrato de la API y es lo que se prueba en la defensa.
+**⚠️ 2. Cada archivo usa nombres distintos para lo mismo.**
+**Cambio de criterio:** ahora va **todo en inglés**, también tablas, columnas, rutas y query params (ver *Nombres en el código*, arriba). La traducción que hicieron está bien: **no la deshagan**. Si leyeron una versión anterior de esta devolución que pedía volver al español, ignoren ese punto.
 
-| Hoy | Tiene que ser |
-|---|---|
-| `GET /students?academic_year=1` | `GET /estudiantes?anio_cursada=1` |
-| `GET /students/{id}` | `GET /estudiantes/{id}` |
-| `GET /career/{id}/students` | `GET /carreras/{id}/estudiantes` |
-| `GET /locations?city=...` | `GET /sedes?ciudad=...` |
-| `GET /summary` | `GET /resumen` |
-| tablas `locations`, `careers`, `students` | `sedes`, `carreras`, `estudiantes` |
-| columnas `name`, `city`, `file`, `year_student`... | `nombre`, `ciudad`, `legajo`, `anio_cursada`... (ver *Alcance de este grupo*) |
+Lo que falta es que los tres archivos se pongan de acuerdo:
 
-Los mensajes de error y las funciones (`list_students`, `get_student`) en inglés están bien, déjenlos así.
+| Dato | `main.py` | `db.py` | `validation.py` |
+|---|---|---|---|
+| Año de cursada | `year_study` | `year_student` | `year_student` |
+| Sede de la carrera | `location_id` | `sede_id` | `id_locations` |
 
-Esto además les resuelve otro problema: hoy cada archivo usa nombres distintos para lo mismo. `main.py` busca `year_study` y `location_id`, `db.py` define `year_student` y `sede_id`, y `validation.py` espera `id_locations`. Con los nombres del alcance en los tres archivos, coinciden.
+Elijan **un** nombre para cada cosa y úsenlo en todos lados. Lo más simple es tomar `db.py` como referencia, cambiando `sede_id` por `location_id` (es el único que quedó en español).
+
+Dos detalles más de nombres:
+- La ruta `/career/{id}/students` quedó en singular y las demás en plural: va `/careers/{id}/students`.
+- `file` no es una buena traducción de *legajo* (se confunde con "archivo"). Mejor `file_number` o `student_number`.
 
 **⚠️ 3. `main.py` no usa `db.py`.**
 `main.py` sigue con `sqlite3`, cursor y SQL escrito a mano. Las clases de `db.py` no se usan en ningún lado. Hay que pasar los endpoints a la sesión de SQLAlchemy (secciones 5 y 8 de la [guía](guias/sqlalchemy_orm.md)). El primero quedaría así:
@@ -250,12 +254,12 @@ Esto además les resuelve otro problema: hoy cada archivo usa nombres distintos 
 from sqlalchemy import select
 from db import get_session, Student
 
-@app.get("/estudiantes")
-def list_students(anio_cursada: int = None):
+@app.get("/students")
+def list_students(year_student: int = None):
     with get_session() as s:
         query = select(Student)
-        if anio_cursada is not None:
-            query = query.where(Student.anio_cursada == anio_cursada)
+        if year_student is not None:
+            query = query.where(Student.year_student == year_student)
         return [student.to_dict() for student in s.scalars(query)]
 ```
 
@@ -264,23 +268,23 @@ def list_students(anio_cursada: int = None):
 - Los largos máximos no coinciden con `validation.py` ni con sus propios datos: `name` admite 30 caracteres y una de las carreras del seed tiene 44; `code` es `String(6)` acá y 10 en la validación; `mode` es 10 acá y 20 allá. Elijan un valor y úsenlo en los dos archivos.
 
 **A corregir en `validation.py`**
-- Está bien pensado (incluido el `partial`), pero nadie lo llama: falta el `POST /estudiantes`, que es el endpoint 6. `crud.py` está vacío.
+- Está bien pensado (incluido el `partial`), pero nadie lo llama: falta el `POST /students`, que es el endpoint 6. `crud.py` está vacío.
 - Solo hace falta validar estudiantes; el alcance no pide `POST` de sedes ni de carreras. Pueden dejar las otras dos funciones, pero no pierdan tiempo ahí.
-- El mensaje dice "career ID does not exist", pero la función no lo comprueba. Antes de insertar, busquen la carrera con `s.get(Career, carrera_id)` y, si no existe, devuelvan **400**.
+- El mensaje dice "career ID does not exist", pero la función no lo comprueba. Antes de insertar, busquen la carrera con `s.get(Career, career_id)` y, si no existe, devuelvan **400**.
 - En `year_student` falta descartar los booleanos, como ya hicieron con `career_id`: hoy `true` pasa como si fuera un 1.
 - Variables en inglés: `archivo`, `anio_de_curso` y `carrera_id` son variables de Python.
 
 **A corregir en el repo**
 - `requirements.txt` sigue igual que el 24/09. Dejen solo: `fastapi`, `uvicorn`, `uvicorn-worker`, `gunicorn`, `sqlalchemy`. Sin `gunicorn` y `uvicorn-worker` el deploy en Render no arranca.
-- El `README.md` tiene solo el título. Tiene que explicar qué hace la API, los endpoints, cómo usar la clave y cómo correrla.
+- El `README.md` tiene solo el título. Tiene que explicar, en inglés, qué hace la API, los endpoints, cómo usar la clave y cómo correrla.
 - Falta el `try/except` para que la API no se caiga si la base no está.
 - Datos: hay 3 sedes y 4 carreras. Se piden unas 10 filas por tabla; los 20 estudiantes están bien.
 
 **Próximos pasos**
 1. Reescribir `seed.py` con SQLAlchemy: importa las clases de `db.py`, llama a `create_tables()` y carga los datos **solo si la tabla está vacía** (sección 9 de la guía). Probar que corre dos veces sin duplicar.
-2. Volver tablas, columnas, rutas y query params a los nombres del alcance, en `db.py`, `main.py` y `validation.py`.
+2. Unificar los nombres de tablas y columnas entre `db.py`, `main.py` y `validation.py`, todo en inglés.
 3. Pasar los 5 `GET` de `main.py` a la sesión de SQLAlchemy y sacar `sqlite3`.
-4. Escribir `POST /estudiantes` usando `validation_students` (400 si los datos están mal).
+4. Escribir `POST /students` usando `validation_students` (400 si los datos están mal).
 5. Arreglar `requirements.txt` y desplegar en Render. No lo dejen para el final: el deploy siempre trae sorpresas.
 
 Antes de cada commit, levanten la API y prueben los endpoints en `/docs`. Varios de estos problemas se ven en el primer intento.
