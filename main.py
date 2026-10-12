@@ -23,14 +23,14 @@ def obtain_connection():
 def initiation():
     return {"message": "Welcome to Mendobot API. For information about available endpoints, visit /docs."}
 
-@app.get("/students")
-def list_students(academic_year: int = None):
+@app.get("/estudiantes")
+def list_students(anio_cursada: int = None):
     con = obtain_connection()
     cur = con.cursor()
-    if academic_year is not None:
-        cur.execute("SELECT * FROM students WHERE year_study=?", (academic_year,))
+    if anio_cursada is not None:
+        cur.execute("SELECT * FROM estudiantes WHERE anio_cursada=?", (anio_cursada,))
     else:
-        cur.execute("SELECT * FROM students")
+        cur.execute("SELECT * FROM estudiantes")
     rows = cur.fetchall()
     con.close()
     result = []
@@ -38,11 +38,11 @@ def list_students(academic_year: int = None):
         result.append(dict(row))
     return result
 
-@app.get("/students/{id}")
+@app.get("/estudiantes/{id}")
 def get_student(id: int):
     con = obtain_connection()
     cur = con.cursor()
-    cur.execute("SELECT * FROM students WHERE id=?", (id,))
+    cur.execute("SELECT * FROM estudiantes WHERE id=?", (id,))
     row = cur.fetchone()
     con.close()
     if row is None:
@@ -50,11 +50,11 @@ def get_student(id: int):
 
     return dict(row)
 
-@app.get("/career/{id}/students")
+@app.get("/carreras/{id}/estudiantes")
 def get_students_by_career(id: int):
     con = obtain_connection()
     cur = con.cursor()
-    cur.execute("SELECT * FROM students WHERE career_id=?", (id,))
+    cur.execute("SELECT * FROM estudiantes WHERE carrera_id=?", (id,))
     rows = cur.fetchall()
     con.close()
     result = []
@@ -62,14 +62,14 @@ def get_students_by_career(id: int):
         result.append(dict(row))
     return result
 
-@app.get("/locations")
-def list_campuses(city: str = None):
+@app.get("/sedes")
+def list_campuses(ciudad: str = None):
     con = obtain_connection()
     cur = con.cursor()
-    if city is not None:
-        cur.execute("SELECT * FROM locations WHERE city=?", (city,))
+    if ciudad is not None:
+        cur.execute("SELECT * FROM sedes WHERE ciudad=?", (ciudad,))
     else:
-        cur.execute("SELECT * FROM locations")
+        cur.execute("SELECT * FROM sedes")
     rows = cur.fetchall()
     con.close()
     result = []
@@ -77,22 +77,22 @@ def list_campuses(city: str = None):
         result.append(dict(row))
     return result
 
-@app.get("/summary")
+@app.get("/resumen")
 def get_summary():
     con = obtain_connection()
     cur = con.cursor()
-    cur.execute("""SELECT c.name AS career, COUNT(e.id) AS total_students 
-                FROM careers c 
-                LEFT JOIN students e ON c.id = e.career_id 
+    cur.execute("""SELECT c.nombre AS carrera, COUNT(e.id) AS total_estudiantes 
+                FROM carreras c 
+                LEFT JOIN estudiantes e ON c.id = e.carrera_id 
                 GROUP BY c.id""")
     rows_careers = cur.fetchall()
     careers_sumary = []
     for row in rows_careers:
         careers_sumary.append(dict(row))
 
-    cur.execute("""SELECT s.name AS location, COUNT(e.id) AS total_students 
-            FROM locations s 
-            JOIN careers c ON s.id = c.location_id LEFT JOIN students e ON c.id = e.career_id 
+    cur.execute("""SELECT s.nombre AS sede, COUNT(e.id) AS total_estudiantes 
+            FROM sedes s 
+            JOIN carreras c ON s.id = c.sede_id LEFT JOIN estudiantes e ON c.id = e.carrera_id 
             GROUP BY s.id""")
     rows_location = cur.fetchall()
     locations_summary = []
@@ -101,6 +101,6 @@ def get_summary():
     
     con.close()
     return {
-        "students_by_career": careers_sumary,
-        "students_by_location": locations_summary
+        "estudiantes_por_carrera": careers_sumary,
+        "estudiantes_por_sede": locations_summary
     }
