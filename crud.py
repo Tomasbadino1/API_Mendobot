@@ -9,91 +9,105 @@ app = FastAPI(
     title = "Mendobot API",
     dependencies=[Depends(verify)])
 
-# ==ENDPOINTS==
-@app.get("/")
+class StudentCreate(BaseModel):
+    legajo: str
+    nombre: str
+    anio_cursada: str
+    carrera_id: str    
+
 def initiation():
     return {"message": "Welcome to Mendobot API. For information about available endpoints, visit /docs."}
 
-@app.get("/estudiantes")
 def list_students(anio_cursada: int = None):
-    
-    
-    con = obtain_connection()
-    cur = con.cursor()
-    if anio_cursada is not None:
-        cur.execute("SELECT * FROM estudiantes WHERE anio_cursada=?", (anio_cursada,))
-    else:
-        cur.execute("SELECT * FROM estudiantes")
-    rows = cur.fetchall()
-    con.close()
-    result = []
-    for row in rows:
-        result.append(dict(row))
-    return result
-
-@app.get("/estudiantes/{id}")
+    with get_session() as s:
+        query = select(Student)
+        if anio_cursada is not None:
+            query = query.where(Student.anio_cursada == anio_cursada)
+        students = s.scalars(query).all()
+        result = []
+        for student in students:
+            result.append(student.to_dict())
+        return result
+        
 def get_student(id: int):
-    con = obtain_connection()
-    cur = con.cursor()
-    cur.execute("SELECT * FROM estudiantes WHERE id=?", (id,))
-    row = cur.fetchone()
-    con.close()
-    if row is None:
-        raise HTTPException(status_code=404, detail="Student not found")
-
-    return dict(row)
-
-@app.get("/carreras/{id}/estudiantes")
+    with get_session() as s:
+        student = s.get(Student, id)
+        if student is None:
+            raise HTTPException(status_code=404, detail="Student not found")
+        return student.to_dict()
+        
 def get_students_by_career(id: int):
-    con = obtain_connection()
-    cur = con.cursor()
-    cur.execute("SELECT * FROM estudiantes WHERE carrera_id=?", (id,))
-    rows = cur.fetchall()
-    con.close()
-    result = []
-    for row in rows:
-        result.append(dict(row))
-    return result
-
-@app.get("/sedes")
+    with get_session() as s:
+        career = s.get(Career, id)
+        if career is None:
+            raise HTTPException(status_code=404, detail="Career not found")
+        
+        query = select(Student).where(Student.carrera_id == id)
+        students = s.scalars(query).all()
+        result = []
+        for student in students:
+            result.append(student.to_dict())
+        return result
+        
 def list_campuses(ciudad: str = None):
-    con = obtain_connection()
-    cur = con.cursor()
-    if ciudad is not None:
-        cur.execute("SELECT * FROM sedes WHERE ciudad=?", (ciudad,))
-    else:
-        cur.execute("SELECT * FROM sedes")
-    rows = cur.fetchall()
-    con.close()
-    result = []
-    for row in rows:
-        result.append(dict(row))
-    return result
+    with get_session() as s:
+        query = select(Location)
+        if ciudad is not None:
+            query = query.where(Location.ciudad == ciudad)
+        locations = s.scalars(query).all()
+        result = []
+        for location in locations:
+            result.append(location.to_dict())
+        return result
 
-@app.get("/resumen")
 def get_summary():
-    con = obtain_connection()
-    cur = con.cursor()
-    cur.execute("""SELECT c.nombre AS carrera, COUNT(e.id) AS total_estudiantes 
-                FROM carreras c 
-                LEFT JOIN estudiantes e ON c.id = e.carrera_id 
-                GROUP BY c.id""")
-    rows_careers = cur.fetchall()
-    careers_sumary = []
-    for row in rows_careers:
-        careers_sumary.append(dict(row))
-
-    cur.execute("""SELECT s.nombre AS sede, COUNT(e.id) AS total_estudiantes 
-            FROM sedes s 
-            JOIN carreras c ON s.id = c.sede_id LEFT JOIN estudiantes e ON c.id = e.carrera_id 
-            GROUP BY s.id""")
-    rows_location = cur.fetchall()
-    locations_summary = []
-    for row in rows_location:
-        locations_summary.append(dict(row))
+    with get_session() as s:
+        #Agrupamiento de estudiantes por carrera
+        query_careers = (
+            select(Career.nombre.label("carrera"), func.count(Student.id).label("total_estudiantes"))
+            .outerjoin(Student, Career.id == Student.carrera_id)
+            .group_by(Career.id)
+        )
+        rows_careers = s.execute(query_careers).all()
+        careers_summary = []
+        for row in rows_careers:
+            careers_summary.append({
+                "carrera": row.carrera,
+                "total_estudiantes": row.total_estudiantes
+            })
+            
+        #Agrupamiento de estudiantes por sede
+        query_locations = (
+            select(Location.nombre.label("sede"), func.count(Student.id).label("total_estudiantes"))
+            .join(Career, Location.id == Career.sede_id)
+            .outerjoin(Student, Career.id == Student.carrera_id)
+            .group_by(Location.id)
+        )
+        rows_locations = s.execute(query_locations).all()
+        locations_summary = []
+        for row in rows_locations:
+            locations_summary.append({
+                "sede": row.sede,
+                "total_estudiantes": row.total_estudiantes
+            })
+        return {
+            "estudiantes_por_carrera": careers_summary,
+            "estudiantes_por_sede": locations_summary
+            }
     
-    con.close()
-    return {
-        "estudiantes_por_carrera": careers_sumary,
-        "estudiantes_por_sede": locations_summary
-    }
+def create_student(student: StudentCreate):
+    with get_session() as s:
+        career = s.get(Career, student.carrera_id)
+        if career is None:
+            raise HTTPException(status_code=400, detail="Career not found")
+        new_student = Student(
+            legajo=student.legajo,
+            nombre=student.nombre,
+            anio_cursada=student.anio_cursada,
+            carrera_id=student.carrera_id,
+            )
+        s.add(new_student)
+        s.commit()
+        s.refresh(new_student)
+        return new_student.to_dict()
+    
