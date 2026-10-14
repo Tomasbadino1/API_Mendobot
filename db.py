@@ -13,57 +13,58 @@ def enable_foreign_keys(con, _):
 class Data(DeclarativeBase):
     pass
 
-class locations(Data):
-    __tablename__ = "locations"
+class Location(Data):
+    __tablename__ = "sedes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(30))
-    city: Mapped[str] = mapped_column(String(30))
-    address: Mapped[str] = mapped_column(String(30))
+    nombre: Mapped[str] = mapped_column(String(50))
+    ciudad: Mapped[str] = mapped_column(String(50))
+    direccion: Mapped[str] = mapped_column(String(100))
 
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "name": self.name,
-            "city": self.city,
-            "address": self.address
+            "nombre": self.nombre,
+            "ciudad": self.ciudad,
+            "direccion": self.direccion
         }
 
-class careers(Data):
-    __tablename__ = "careers"
+class Career(Data):
+    __tablename__ = "carreras"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(30))
-    code: Mapped[str] = mapped_column(String(6))
-    mode: Mapped[str] = mapped_column(String(10))
-    sede_id: Mapped[int] = mapped_column(ForeignKey("locations.id"))
+    nombre: Mapped[str] = mapped_column(String(100))
+    codigo: Mapped[str] = mapped_column(String(10))
+    modalidad: Mapped[str] = mapped_column(String(20))
+    sede_id: Mapped[int] = mapped_column(ForeignKey("sedes.id"))
 
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "name": self.name,
-            "code": self.code,
-            "mode": self.mode,
+            "nombre": self.nombre,
+            "codigo": self.codigo,
+            "modalidad": self.modalidad,
             "sede_id": self.sede_id
         }
 
-class students(Data):
-    __tablename__ = "students"
+class Student(Data):
+    __tablename__ = "estudiantes"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    file: Mapped[str] = mapped_column(String(6))
-    name: Mapped[str] = mapped_column(String(30))
-    year_student: Mapped[int] = mapped_column()
-    career_id: Mapped[int] = mapped_column(ForeignKey("careers.id"))
+    legajo: Mapped[str] = mapped_column(String(10))
+    nombre: Mapped[str] = mapped_column(String(50))
+    anio_cursada: Mapped[int] = mapped_column()
+    carrera_id: Mapped[int] = mapped_column(ForeignKey("carreras.id"))
     
     def to_dict(self) -> dict:
         return {
             "id": self.id,
-            "file": self.file,
-            "name": self.name,
-            "year_student": self.year_student,
-            "career_id": self.career_id
+            "legajo": self.legajo,
+            "nombre": self.nombre,
+            "anio_cursada": self.anio_cursada,
+            "carrera_id": self.carrera_id
         }
+
 
 def create_tables():
     Data.metadata.create_all(engine)
