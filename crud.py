@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, Header
 from pydantic import BaseModel
 from sqlalchemy import select, func
 
-from db import get_session, Student, Career, Location
+from models import get_session, Student, Career, Location
 from security import verify
 
 app = FastAPI(
