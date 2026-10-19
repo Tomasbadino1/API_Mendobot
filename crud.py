@@ -1,13 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, Header
 from pydantic import BaseModel
 from sqlalchemy import select, func
 
 from models import get_session, Student, Career, Location
 from security import verify
 
-app = FastAPI(
-    title = "Mendobot API",
-    dependencies=[Depends(verify)])
 
 class StudentCreate(BaseModel):
     legajo: str
@@ -32,16 +28,14 @@ def list_students(anio_cursada: int = None):
 def get_student(id: int):
     with get_session() as s:
         student = s.get(Student, id)
-        if student is None:
-            raise HTTPException(status_code=404, detail="Student not found")
+        if student is None: return None        
         return student.to_dict()
         
 def get_students_by_career(id: int):
     with get_session() as s:
         career = s.get(Career, id)
         if career is None:
-            raise HTTPException(status_code=404, detail="Career not found")
-        
+            return None        
         query = select(Student).where(Student.carrera_id == id)
         students = s.scalars(query).all()
         result = []
@@ -99,7 +93,8 @@ def create_student(student: StudentCreate):
     with get_session() as s:
         career = s.get(Career, student.carrera_id)
         if career is None:
-            raise HTTPException(status_code=400, detail="Career not found")
+            raise ValueError("Career not found")
+    
         new_student = Student(
             legajo=student.legajo,
             nombre=student.nombre,
@@ -110,4 +105,3 @@ def create_student(student: StudentCreate):
         s.commit()
         s.refresh(new_student)
         return new_student.to_dict()
-    
