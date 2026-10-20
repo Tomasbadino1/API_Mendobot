@@ -1,12 +1,17 @@
-import os 
-from fastapi import HTTPException, Header 
+import os
 from dotenv import load_dotenv
+from fastapi import Depends, HTTPException
+from fastapi.security import APIKeyHeader
 
 load_dotenv()
 
-KEY = os.getenv("KEY")
+API_KEY = os.getenv("API_KEY")
 
-def verify(x_api_key: str = Header(None)):
+header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+def verify(key: str = Depends(header)):
     "Rejects the request if no API Key is set in the environment or if the provided key does not match."
-    if not KEY or not x_api_key or x_api_key != KEY:
-        raise HTTPException(status_code=401, detail="Invalid or missing API Key")
+    if API_KEY is None or key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return key
