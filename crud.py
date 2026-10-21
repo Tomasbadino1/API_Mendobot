@@ -84,7 +84,7 @@ def get_summary():
             "estudiantes_por_sede": locations_summary
             }
     
-def create_student(student_data: validation.StudentCreate):
+def data_student(student_data: validation.StudentCreate):
     with get_session() as s:
         career = s.get(Career, student_data.career_id)
         if career is None:

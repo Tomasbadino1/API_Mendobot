@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 import crud
-from crud import StudentCreate
+from validation import StudentCreate
 from security import verify
 
 app = FastAPI(
@@ -60,7 +60,7 @@ def get_summary():
 @app.post("/estudiantes", status_code=201)
 def create_student(student: StudentCreate):
     try:
-        return crud.create_student(student_data=student)
+        return crud.data_student(student_data=student)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except IntegrityError:
