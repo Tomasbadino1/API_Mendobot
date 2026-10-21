@@ -8,7 +8,7 @@ class StudentCreate(BaseModel):
     file: str = Field(min_length=1, max_length=10)
     name: str = Field(min_length=1, max_length=50)
     year_study: int = Field(ge=1, le=5)
-    careers_id: int = Field(gt=0)
+    career_id: int = Field(gt=0)
 
 def initiation():
     return {"message": "Welcome to Mendobot API. For information about available endpoints, visit /docs."}
@@ -59,7 +59,7 @@ def get_summary():
         query_careers = (
             select(Career.name.label("carrera"), 
             func.count(Student.id).label("total_estudiantes"))
-            .outerjoin(Student, Career.id == Student.careers_id)
+            .outerjoin(Student, Career.id == Student.career_id)
             .group_by(Career.id)
         )
         rows_careers = s.execute(query_careers).all()
@@ -74,8 +74,8 @@ def get_summary():
         query_locations = (
             select(Location.name.label("sede"), 
             func.count(Student.id).label("total_estudiantes"))
-            .join(Career, Location.id == Career.sede_id)
-            .outerjoin(Student, Career.id == Student.careers_id)
+            .join(Career, Location.id == Career.location_id)
+            .outerjoin(Student, Career.id == Student.career_id)
             .group_by(Location.id)
         )
         rows_locations = s.execute(query_locations).all()
@@ -92,15 +92,20 @@ def get_summary():
     
 def create_student(student_data: StudentCreate):
     with get_session() as s:
-        career = s.get(Career, student_data.careers_id)
+        career = s.get(Career, student_data.career_id)
         if career is None:
             raise ValueError("Career not found")
-    
+        
+        student_exist = s.scalars(select(Student).where(Student.file == student_data.file)).first()
+        if student_exist is not None:
+            raise ValueError("Student already exists")
+        
+
         new_student = Student(
             file=student_data.file,
             name=student_data.name,
             year_study=student_data.year_study,
-            careers_id=student_data.careers_id,
+            career_id=student_data.career_id,
             )
         s.add(new_student)
         s.commit()

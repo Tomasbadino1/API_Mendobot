@@ -13,7 +13,7 @@ class Data(DeclarativeBase):
     pass
 
 class Location(Data):
-    __tablename__ = "sedes"
+    __tablename__ = "locations"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50))
@@ -29,13 +29,13 @@ class Location(Data):
         }
 
 class Career(Data):
-    __tablename__ = "carreras"
+    __tablename__ = "careers"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String(10))
     name: Mapped[str] = mapped_column(String(100))
     modality: Mapped[str] = mapped_column(String(20))
-    sede_id: Mapped[int] = mapped_column(ForeignKey("sedes.id"))
+    location_id: Mapped[int] = mapped_column(ForeignKey("locations.id"))
 
     def to_dict(self) -> dict:
         return {
@@ -43,25 +43,25 @@ class Career(Data):
             "name": self.name,
             "code": self.code,
             "modality": self.modality,
-            "sede_id": self.sede_id
+            "location_id": self.location_id
         }
 
 class Student(Data):
-    __tablename__ = "estudiantes"
+    __tablename__ = "students"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     file: Mapped[str] = mapped_column(String(10))
     name: Mapped[str] = mapped_column(String(50))
     year_study: Mapped[int] = mapped_column()
-    careers_id: Mapped[int] = mapped_column(ForeignKey("carreras.id"))
-    
+    career_id: Mapped[int] = mapped_column(ForeignKey("careers.id"))
+
     def to_dict(self) -> dict:
         return {
             "id": self.id,
             "file": self.file,
             "name": self.name,
             "year_study": self.year_study,
-            "careers_id": self.careers_id
+            "career_id": self.career_id
         }
 
 
