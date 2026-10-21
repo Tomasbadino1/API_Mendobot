@@ -18,29 +18,35 @@ def initiation():
 @app.get("/estudiantes")
 def list_students(anio_cursada: int = None):
     try:
-        return crud.list_students(anio_cursada=anio_cursada)
+        return crud.list_students(year_study=anio_cursada)
     except OperationalError:
         raise HTTPException(status_code=500, detail="Database error")
         
 @app.get("/estudiantes/{id}")
 def get_student(id: int):
-    student = crud.get_student(id)
-    if student is None:
-        raise HTTPException(status_code=404, detail="Student not found")
-    return student
-        
+    try:
+        student = crud.get_student(student_id=id)
+        if student is None:
+            raise HTTPException(status_code=404, detail="Student not found")
+        return student
+    except OperationalError:
+        raise HTTPException(status_code=500, detail="Database error")
+
+    
 @app.get("/carreras/{id}/estudiantes")
 def get_students_by_career(id: int):
-    students = crud.get_students_by_career(id)
-    if students is None:
-        raise HTTPException(status_code=404, detail="Career not found")
-    return students
-
+    try:
+        students = crud.get_students_by_career(id)
+        if students is None:
+            raise HTTPException(status_code=404, detail="Career not found")
+        return students
+    except OperationalError:
+        raise HTTPException(status_code=500, detail="Database error")
 
 @app.get("/sedes")
 def list_campuses(ciudad: str = None):
     try:
-        return crud.list_campuses(ciudad=ciudad)
+        return crud.list_campuses(city=ciudad)
     except OperationalError:
         raise HTTPException(status_code=500, detail="Database error")
 
@@ -54,7 +60,7 @@ def get_summary():
 @app.post("/estudiantes", status_code=201)
 def create_student(student: StudentCreate):
     try:
-        return crud.create_student(student=student)
+        return crud.create_student(student_data=student)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except IntegrityError:
