@@ -16,7 +16,7 @@ def initiation():
     return crud.initiation()
 
 @app.get("/estudiantes")
-def list_students(anio_cursada: int = None):
+def list_students(anio_cursada: int | None = None):
     try:
         return crud.list_students(year_study=anio_cursada)
     except OperationalError:
@@ -36,7 +36,7 @@ def get_student(id: int):
 @app.get("/carreras/{id}/estudiantes")
 def get_students_by_career(id: int):
     try:
-        students = crud.get_students_by_career(id)
+        students = crud.get_students_by_career(career_id=id)
         if students is None:
             raise HTTPException(status_code=404, detail="Career not found")
         return students
@@ -44,7 +44,7 @@ def get_students_by_career(id: int):
         raise HTTPException(status_code=500, detail="Database error")
 
 @app.get("/sedes")
-def list_campuses(ciudad: str = None):
+def list_campuses(ciudad: str | None = None):
     try:
         return crud.list_campuses(city=ciudad)
     except OperationalError:
