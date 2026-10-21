@@ -1,4 +1,3 @@
-import sqlite3
 from sqlalchemy import create_engine, event, ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
 
@@ -72,7 +71,3 @@ def create_tables():
 def get_session() -> Session:
     return Session(engine)
 
-def obtain_connection():
-    con = sqlite3.connect("data.db")
-    con.row_factory = sqlite3.Row
-    return con
