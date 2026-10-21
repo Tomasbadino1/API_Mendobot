@@ -1,14 +1,8 @@
-from pydantic import BaseModel, Field
+import validation
 from sqlalchemy import select, func
 
 from models import get_session, Student, Career, Location
 
-
-class StudentCreate(BaseModel):
-    file: str = Field(min_length=1, max_length=10)
-    name: str = Field(min_length=1, max_length=50)
-    year_study: int = Field(ge=1, le=5)
-    career_id: int = Field(gt=0)
 
 def initiation():
     return {"message": "Welcome to Mendobot API. For information about available endpoints, visit /docs."}
@@ -90,7 +84,7 @@ def get_summary():
             "estudiantes_por_sede": locations_summary
             }
     
-def create_student(student_data: StudentCreate):
+def create_student(student_data: validation.StudentCreate):
     with get_session() as s:
         career = s.get(Career, student_data.career_id)
         if career is None:
