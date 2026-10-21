@@ -341,3 +341,41 @@ Es el mismo problema del 08/10, ahora entre `crud.py` y `models.py`.
 **Más chico:** `careers_id` debería ser `career_id` (una carrera por estudiante, en singular); `crud.py` no debería lanzar `HTTPException` (eso es de `main.py`); en `models.py` quedó `obtain_connection()` con `sqlite3`, sin usar.
 
 Antes de cada commit, levanten la API y prueben en `/docs`. Un `main.py` vacío se ve en el primer intento.
+
+## 21/10 (entrega)
+
+**Lo que hay:** el avance más grande del proyecto, y de los dos. 👍 `main.py` tiene las 6 rutas y `crud.py` usa los nombres reales de `models.py`. Hay `try/except` en los GET, la clave no deja pasar nada si falta el `.env`, y el README está completo, con la declaración de uso de IA.
+
+**⚠️ Pero el último commit dejó la API sin arrancar.** El commit `c3342c5` ("corrections in crud.py and main.py", 21/10) borró la clase `StudentCreate` de `crud.py`, y `main.py` todavía la importa (`from crud import StudentCreate`, línea 5). Al levantar da `ImportError` y no responde ningún endpoint. Seguramente la quisieron mover a `main.py`, como sugería la devolución del 15/10, y quedó a medio camino. **Se arregla pegando la clase en `main.py`**, arriba de los endpoints, y sacando el import:
+
+```python
+from pydantic import BaseModel, Field
+
+class StudentCreate(BaseModel):
+    file: str = Field(min_length=1, max_length=10)
+    name: str = Field(min_length=1, max_length=50)
+    year_study: int = Field(ge=1, le=5)
+    career_id: int = Field(gt=0)
+```
+
+En `crud.py`, cambien la anotación de `create_student` por `student_data` a secas (o importen la clase desde `main.py`).
+
+**Con la clase restaurada, probé todo en una copia** y funciona:
+
+| # | Endpoint | Resultado |
+|---|---|---|
+| 1 | `GET /estudiantes?anio_cursada=` | ✅ 20 en total; año 1 trae 5 |
+| 2 | `GET /estudiantes/{id}` | ✅ `/999` da 404 |
+| 3 | `GET /carreras/{id}/estudiantes` | ✅ Coincide con el seed; carrera inexistente da 404 |
+| 4 | `GET /sedes?ciudad=` | ✅ Filtra bien |
+| 5 | `GET /resumen` | ✅ Estudiantes por carrera y por sede, con los números correctos |
+| 6 | `POST /estudiantes` | ✅ 201 con datos válidos; 422 si falta un campo o el año está fuera de rango; 400 si la carrera no existe o el legajo está repetido |
+
+Más 401 sin clave o con clave mala, y el seed sin duplicar. **Es decir: con esa corrección, el Nivel A está completo.**
+
+**Lo que conviene corregir también:**
+- **README:** la clave de desarrollo que figura (`mendobot123`) no está configurada en ningún lado. Agreguen el paso "copiar `.env.example` a `.env` y escribir `API_KEY=...`". El ejemplo del `POST` usa `legajo`, `nombre`, `anio_cursada` y `carrera_id`, pero el modelo espera `file`, `name`, `year_study` y `career_id`: tal como está, da 422.
+- **El `POST` no tiene `try/except` de base:** sin la base da 500 sin control (los GET ya lo manejan).
+- **Pydantic acepta algunas cosas:** `true` y `"3"` como año, y un nombre de solo espacios. Si quieren cerrarlo: `year_study: StrictInt = Field(ge=1, le=5)` y `name: str = Field(min_length=1, pattern=r"\S")`.
+
+**Para la defensa (28/10):** prueben la demo completa en la notebook con la que van a presentar, siguiendo el README desde cero. Este último error se hubiera visto con solo levantar la API antes del commit.
