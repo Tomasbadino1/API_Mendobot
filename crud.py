@@ -1,9 +1,14 @@
-
+from pydantic import BaseModel, Field
 from sqlalchemy import select, func
 
 from models import get_session, Student, Career, Location
 
 
+class StudentCreate(BaseModel):
+    file: str = Field(min_length=1, max_length=10)
+    name: str = Field(min_length=1, max_length=50)
+    year_study: int = Field(ge=1, le=5)
+    career_id: int = Field(gt=0)
 
 def initiation():
     return {"message": "Welcome to Mendobot API. For information about available endpoints, visit /docs."}
@@ -30,7 +35,7 @@ def get_students_by_career(career_id: int):
         career = s.get(Career, career_id)
         if career is None:
             return None        
-        query = select(Student).where(Student.career_id == career_id)
+        query = select(Student).where(Student.careers_id == career_id)
         students = s.scalars(query).all()
         result = []
         for student in students:
@@ -106,6 +111,3 @@ def create_student(student_data: StudentCreate):
         s.commit()
         s.refresh(new_student)
         return new_student.to_dict()
-
-
-
