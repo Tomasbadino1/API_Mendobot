@@ -35,7 +35,7 @@ def get_students_by_career(career_id: int):
         career = s.get(Career, career_id)
         if career is None:
             return None        
-        query = select(Student).where(Student.careers_id == career_id)
+        query = select(Student).where(Student.career_id == career_id)
         students = s.scalars(query).all()
         result = []
         for student in students:
@@ -111,3 +111,6 @@ def create_student(student_data: StudentCreate):
         s.commit()
         s.refresh(new_student)
         return new_student.to_dict()
+
+
+
