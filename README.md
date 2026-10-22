@@ -1,134 +1,154 @@
-# Mendobot API — Proyecto Integrador
+# Mendobot API — Integrative Project
 
-REST API desarrollada con **FastAPI** y **SQLAlchemy** para la gestión de sedes, carreras y estudiantes de la Universidad de Mendoza.
+REST API developed with **FastAPI** and **SQLAlchemy** for managing branch campuses, academic careers, and students at the University of Mendoza.
+
 
 ## Authors
+* Tomás Badino
+* Nicolás Molinero
 
-- Tomás Badino
-- Nicolás Molinero
 
-## Requisitos Previos
+## Prerequisites
 
-* **Python 3.10** o superior.
-* Gestor de paquetes **pip**.
+* **Python 3.10** or higher.
+* **pip** package manager.
 
----
 
-## Instalación y Configuración
+## Installation and Setup
 
-### 1. Clonar el repositorio y crear el entorno virtual
+### 1. Clone the repository and create the virtual environment
+```bash
 git clone https://github.com/Tomasbadino1/API_Mendobot.git
 
-# Crear entorno virtual
+# Create virtual environment
 python -m venv venv
 
-# Activar entorno virtual
-# En Linux/macOS:
+# Activate virtual environment
+# On Linux/macOS:
 source venv/bin/activate
-# En Windows:
+# On Windows:
 venv\Scripts\activate
+```
 
-
-### 2. Instalar dependencias
+### 2. Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
-### 3. Configurar variables de entorno
-Copiar el archivo de plantilla `.env.example` para crear el archivo local `.env`:
+### 3. Configure environment variables
+Copy the template file `.env.example` to create the local `.env` file:
 
-# En Linux/macOS:
+```bash
+# On Linux/macOS:
 cp .env.example .env
 
-# En Windows (CMD):
+# On Windows (CMD):
 copy .env.example .env
+```
 
-Abrir el archivo `.env` recién creado y asegurarse de definir la clave de API para desarrollo:
+Open the newly created `.env` file and make sure to set the development API key:
 
 API_KEY=mendobot123
 
-> **Nota de seguridad**: El archivo `.env` contiene credenciales locales y se encuentra excluido del control de versiones mediante `.gitignore`.
+
+> **Security Note**: The `.env` file contains local credentials and is excluded from version control via `.gitignore`.
 
 
-## Poblado de la Base de Datos
 
-Antes de iniciar el servidor por primera vez, se debe ejecutar el script de siembra para crear las tablas en SQLite (`data.db`) y cargar los datos iniciales:
+## Database Seeding
 
+Before running the server for the first time, execute the seed script to create the SQLite tables (`data.db`) and load the initial data:
+
+```bash
 python seed.py
+```
 
 
-## Ejecución de la API
+## Running the API
 
-Para levantar el servidor de desarrollo local con recarga automática, ejecutar:
+To start the local development server with auto-reload, run:
 
+```bash
 uvicorn main:app --reload
+```
 
-## Autenticación
-
-Todas las rutas de la API requieren autenticación mediante la `X-API-Key`:
-
-* **Nombre del Header**: `X-API-Key`
-* **Valor**: `mendobot123` (o el valor definido en tu `.env`)
-
-### Uso en la documentación interactiva (/docs)
-1. Abrir el navegador en `http://127.0.0.1:8000/docs`.
-2. Hacer clic en el botón **Authorize** (arriba a la derecha).
-3. Ingresar la clave `mendobot123` en el campo `X-API-Key` y presionar **Authorize**.
+The API will be available locally at `http://127.0.0.1:8000` and the interactive documentation at `http://127.0.0.1:8000/docs`.
 
 
-## Endpoints Disponibles y Ejemplos de Uso
+## Authentication in Swagger UI (/docs)
 
-### 1. Inicio (`GET /`)
-* **Descripción**: Confirma que la API está activa y lista para operar.
-* **Prueba en `/docs`**: Desplegar la sección `GET /`, presionar **Try it out** y luego **Execute**.
-* **Respuesta esperada**: `200 OK` con el mensaje de bienvenida.
+All API routes are protected using the `X-API-Key` HTTP header.
 
-### 2. Listar estudiantes (`GET /estudiantes`)
-* **Descripción**: Muestra todos los estudiantes o permite filtrarlos opcionalmente por año de cursada.
-* **Parámetros en `/docs`**:
-  * `anio_cursada` *(Query param, Opcional)*: Ingresar un entero entre `1` y `5` para filtrar. Si se deja en blanco, devuelve todos los estudiantes.
-* **Respuestas esperadas**: `200 OK` (lista de estudiantes) o `500 Internal Server Error` (falla de base de datos).
+To interactively test the API from your browser:
 
-### 3. Obtener estudiante por ID (`GET /estudiantes/{id}`)
-* **Descripción**: Devuelve la ficha detallada de un estudiante en base a su ID.
-* **Parámetros en `/docs`**:
-  * `id` *(Path param, Requerido)*: Número entero identificador del estudiante (ejemplo: `1`).
-* **Respuestas esperadas**: 
-  * `200 OK`: Devuelve el objeto del estudiante.
-  * `404 Not Found`: Si el ID buscado no existe (`{"detail": "Student not found"}`).
+1. Open your browser and go to **`http://127.0.0.1:8000/docs`**.
+2. Click the **Authorize** button (located in the top right corner).
+3. In the **`X-API-Key (apiKey)`** field, enter the key configured in your `.env` file (`mendobot123`).
+4. Click **Authorize** and then **Close**.
 
-### 4. Listar estudiantes por carrera (`GET /carreras/{id}/estudiantes`)
-* **Descripción**: Muestra la lista de estudiantes inscriptos en una carrera específica.
-* **Parámetros en `/docs`**:
-  * `id` *(Path param, Requerido)*: Número entero del ID de la carrera (ejemplo: `1`).
-* **Respuestas esperadas**: 
-  * `200 OK`: Lista de estudiantes inscriptos.
-  * `404 Not Found`: Si la carrera no existe (`{"detail": "Career not found"}`).
+*Once authenticated, the padlocks next to each endpoint will appear closed, and you can test all endpoints by clicking **Try it out** -> **Execute**.*
 
-### 5. Listar sedes (`GET /sedes`)
-* **Descripción**: Devuelve el listado de sedes universitarias con opción de filtro por ciudad.
-* **Parámetros en `/docs`**:
-  * `ciudad` *(Query param, Opcional)*: Nombre de la ciudad para filtrar (ejemplo: `Mendoza` o `Rio cuarto`). Si no se completa, lista todas las sedes.
-* **Respuestas esperadas**: `200 OK`.
 
-### 6. Resumen estadístico (`GET /resumen`)
-* **Descripción**: Genera un reporte consolidado con la cantidad total de estudiantes agrupados por carrera y por sede.
-* **Prueba en `/docs`**: Desplegar `GET /resumen`, presionar **Try it out** y luego **Execute**.
-* **Respuestas esperadas**: `200 OK`.
+## Endpoints Usage Guide in /docs
 
-### 7. Registrar un estudiante (`POST /estudiantes`)
-* **Descripción**: Inserta un nuevo estudiante en la base de datos.
-* **Cuerpo de la Petición (`Request body`) en `/docs`**:
-  Seleccionar la opción **Try it out** y reemplazar el objeto JSON de ejemplo por uno con los nombres de campos exactos en inglés exigidos por el modelo Pydantic:
-  
-Ejemplo de Petición HTTP (`POST`)**:
+### 1. Home (`GET /`)
+* **Description**: Confirms that the API is up and running.
+* **Testing in `/docs`**: Expand the `GET /` section, click **Try it out**, and then **Execute**.
+* **Expected Response**: `200 OK` with the welcome message.
+
+### 2. List students (`GET /estudiantes`)
+* **Description**: Displays all students or allows optional filtering by year of study.
+* **Parameters in `/docs`**:
+  * `anio_cursada` *(Query param, Optional)*: Enter an integer between `1` and `5` to filter. If left blank, returns all students.
+* **Expected Responses**: `200 OK` (list of students) or `500 Internal Server Error` (database failure).
+
+### 3. Get student by ID (`GET /estudiantes/{id}`)
+* **Description**: Returns detailed student information based on their ID.
+* **Parameters in `/docs`**:
+  * `id` *(Path param, Required)*: Integer ID of the student (e.g., `1`).
+* **Expected Responses**: 
+  * `200 OK`: Returns the student object.
+  * `404 Not Found`: If the requested ID does not exist (`{"detail": "Student not found"}`).
+
+### 4. List students by career (`GET /carreras/{id}/estudiantes`)
+* **Description**: Displays the list of students enrolled in a specific career.
+* **Parameters in `/docs`**:
+  * `id` *(Path param, Required)*: Integer ID of the career (e.g., `1`).
+* **Expected Responses**: 
+  * `200 OK`: List of enrolled students.
+  * `404 Not Found`: If the career does not exist (`{"detail": "Career not found"}`).
+
+### 5. List branch campuses (`GET /sedes`)
+* **Description**: Returns the list of university branch campuses with an optional filter by city.
+* **Parameters in `/docs`**:
+  * `ciudad` *(Query param, Optional)*: City name to filter by (e.g., `Mendoza` or `Rio cuarto`). If omitted, lists all campuses.
+* **Expected Responses**: `200 OK`.
+
+### 6. Statistical Summary (`GET /resumen`)
+* **Description**: Generates a consolidated report with the total count of students grouped by career and by campus.
+* **Testing in `/docs`**: Expand `GET /resumen`, click **Try it out**, and then **Execute**.
+* **Expected Responses**: `200 OK`.
+
+### 7. Register a student (`POST /estudiantes`)
+* **Description**: Inserts a new student into the database.
+* **Request body in `/docs`**:
+  Select **Try it out** and replace the example JSON object with one containing the exact field names expected by the Pydantic model:
+
 json
-    {
-         "file": "F-099",
-         "name": "Mariana López",
-         "year_study": 1,
-         "careers_id": 1
-       }'
+{
+  "file": "F-099",
+  "name": "Mariana López",
+  "year_study": 1,
+  "careers_id": 1
+}
 
-* **Respuestas posibles**:
-  * **`201 Created`**: Estudiante registrado exitosamente.
-  * **`422 Unprocessable Entity`**: Error de validación en la estructura del JSON enviado.
-  * **`400 Bad Request`**: La carrera especificada en `careers_id` no existe.
+
+* **Expected Responses**:
+  * `201 Created`: Student successfully registered.
+  * `422 Unprocessable Entity`: Validation error in the sent JSON structure.
+  * `400 Bad Request`: The specified `careers_id` does not exist (`{"detail": "Career ID does not exist"}`).
+
+
+## AI Usage Statement
+
+An AI assistant was used as support for clarifying concepts regarding SQLAlchemy, modular project structuring, and refining exception handling. All code was reviewed, tested, and adapted by the team members.
