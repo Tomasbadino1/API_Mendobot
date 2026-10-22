@@ -386,3 +386,14 @@ Más 401 sin clave o con clave mala, y el seed sin duplicar. **Es decir: con esa
 - Sin clave o con clave mala da 401.
 
 **El Nivel A está completo.** 🎉 Para la defensa quedan como recomendación los puntos de arriba: la clave en el README, el ejemplo del `POST` con los campos nuevos y que el año no acepte `true`.
+
+## 22/10
+
+**Aplicaron todas las recomendaciones del 21/10.** 👍
+- El `POST` usa `StrictInt` y el `pattern` en el nombre: ahora `true` como año y un nombre de solo espacios dan 422. Lo probé.
+- El README explica cómo crear el `.env` a partir de `.env.example` y qué clave poner.
+- El ejemplo del `POST` usa los campos correctos.
+
+Los 6 endpoints siguen funcionando, con su 404 y su 401. **El proyecto está completo.** 🎉
+
+**Para la defensa (28/10):** prueben la demo siguiendo su propio README, en la notebook con la que van a presentar. Los dos tienen que poder explicar cualquier parte. Les pueden preguntar, por ejemplo, por qué el `POST` devuelve 422 en unos casos y 400 en otros (lo que valida Pydantic y lo que valida `crud.py`).
