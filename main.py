@@ -61,7 +61,8 @@ def get_summary():
 def create_student(student: StudentCreate):
     try:
         return crud.create_student(student_data=student)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
     except IntegrityError:
         raise HTTPException(status_code=400, detail="Career ID does not exist")
+    except Exception as s:
+        raise HTTPException(status_code=400, detail=(f"Server problems: {str(s)}"))
