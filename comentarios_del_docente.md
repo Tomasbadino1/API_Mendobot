@@ -379,3 +379,10 @@ Más 401 sin clave o con clave mala, y el seed sin duplicar. **Es decir: con esa
 - **Pydantic acepta algunas cosas:** `true` y `"3"` como año, y un nombre de solo espacios. Si quieren cerrarlo: `year_study: StrictInt = Field(ge=1, le=5)` y `name: str = Field(min_length=1, pattern=r"\S")`.
 
 **Para la defensa (28/10):** prueben la demo completa en la notebook con la que van a presentar, siguiendo el README desde cero. Este último error se hubiera visto con solo levantar la API antes del commit.
+
+**Actualización (21/10, noche):** con los últimos commits de Nicolás, `StudentCreate` quedó en `validation.py` y la API **arranca de nuevo**. Lo probé:
+- Los 6 endpoints responden, con sus 404.
+- El `POST` da 201, 400 si la carrera no existe y 422 si faltan datos.
+- Sin clave o con clave mala da 401.
+
+**El Nivel A está completo.** 🎉 Para la defensa quedan como recomendación los puntos de arriba: la clave en el README, el ejemplo del `POST` con los campos nuevos y que el año no acepte `true`.
