@@ -11,7 +11,7 @@ def seed():
             return
         location1 = Location(name="Central", city="Mendoza", address="Av. Boulogne Sur Mer 683")
         location2 = Location(name="Rio Cuarto", city="Rio Cuarto",address="Belgrano 200")
-        location3 = Location(name="San Rafael", city="Mendoza", address="Bernardo de Irigoyen y España")
+        location3 = Location(name="San Rafael", city="San Rafael", address="Bernardo de Irigoyen y España")
         s.add_all([location1, location2, location3])
         s.commit()
 
