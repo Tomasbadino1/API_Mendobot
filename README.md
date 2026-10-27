@@ -83,7 +83,7 @@ To interactively test the API from your browser:
 
 1. Open your browser and go to **`http://127.0.0.1:8000/docs`**.
 2. Click the **Authorize** button (located in the top right corner).
-3. In the **`X-API-Key (apiKey)`** field, enter the key configured in your `.env` file (`mendobot123`).
+3. In the **`X-API-Key (apiKey)`** field, enter the key configured in your `.env` file.
 4. Click **Authorize** and then **Close**.
 
 *Once authenticated, the padlocks next to each endpoint will appear closed, and you can test all endpoints by clicking **Try it out** -> **Execute**.*
