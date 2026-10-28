@@ -46,9 +46,7 @@ cp .env.example .env
 copy .env.example .env
 ```
 
-Open the newly created `.env` file and make sure to set the development API key:
-
-API_KEY=mendobot123
+Open the newly created `.env` file and make sure to set the development API key
 
 
 > **Security Note**: The `.env` file contains local credentials and is excluded from version control via `.gitignore`.
